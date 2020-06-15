@@ -12,24 +12,65 @@ using Trinity.Storage;
 
 namespace Trinity.ServiceFabric.Remoting
 {
+    using System.Linq;
+    using System.Threading;
+    using Microsoft.ServiceFabric.Services.Client;
+
     internal class ServiceFabricRemotingClientConnection : IMessagePassingEndpoint
     {
         private ICommunicationModuleRegistry m_modules;
         private ITrinityOverRemotingService m_svcProxy;
+        private ServicePartitionKey m_userSuppliedPartitionKey = null;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serviceUrl"></param>
+        /// <param name="mods"></param>
         public ServiceFabricRemotingClientConnection(string serviceUrl, ICommunicationModuleRegistry mods)
         {
             this.m_modules = mods;
-            var proxyFactory = new ServiceProxyFactory(c => new FabricTransportServiceRemotingClientFactory());
+
+            var proxyFactory = new ServiceProxyFactory(createServiceRemotingClientFactory: c => new FabricTransportServiceRemotingClientFactory());
+
             var rng = new Random();
+
             this.m_svcProxy = proxyFactory.CreateServiceProxy<ITrinityOverRemotingService>(
                 new Uri(serviceUrl),
-                new Microsoft.ServiceFabric.Services.Client.ServicePartitionKey(rng.Next()),
+                new ServicePartitionKey(rng.Next()),
                 listenerName: Constants.c_RemotingListenerName);
+        }
+
+        // Overloaded Service Fabric RemRemoting Client Connection so that the user can
+        // supply their own partition key.
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="serviceUrl"></param>
+        /// <param name="mods"></param>
+        /// <param name="userPartitionKey"></param>
+        public ServiceFabricRemotingClientConnection(string serviceUrl, 
+                                                     ICommunicationModuleRegistry mods, 
+                                                     ServicePartitionKey userPartitionKey = null)
+        {
+            m_userSuppliedPartitionKey = userPartitionKey ?? new ServicePartitionKey(new Random().Next());
+
+            this.m_modules = mods;
+
+            ServiceProxyFactory proxyFactory = new ServiceProxyFactory(serviceRemotingFactory => new FabricTransportServiceRemotingClientFactory());
+
+            this.m_svcProxy = proxyFactory.CreateServiceProxy<ITrinityOverRemotingService>(new Uri(serviceUrl),
+                                                                                           m_userSuppliedPartitionKey,
+                                                                                           listenerName: Constants.c_RemotingListenerName);
         }
 
         public T GetCommunicationModule<T>() where T : CommunicationModule => m_modules.GetCommunicationModule<T>();
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="size"></param>
         public unsafe void SendMessage(byte* message, int size)
         {
             try
@@ -47,6 +88,12 @@ namespace Trinity.ServiceFabric.Remoting
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="size"></param>
+        /// <param name="response"></param>
         public unsafe void SendMessage(byte* message, int size, out TrinityResponse response)
         {
             try
@@ -68,6 +115,12 @@ namespace Trinity.ServiceFabric.Remoting
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="sizes"></param>
+        /// <param name="count"></param>
         public unsafe void SendMessage(byte** message, int* sizes, int count)
         {
             int len = 0;
@@ -85,6 +138,13 @@ namespace Trinity.ServiceFabric.Remoting
             m_svcProxy.SendMessageAsync(buf).Wait();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="sizes"></param>
+        /// <param name="count"></param>
+        /// <param name="response"></param>
         public unsafe void SendMessage(byte** message, int* sizes, int count, out TrinityResponse response)
         {
             int len = 0;

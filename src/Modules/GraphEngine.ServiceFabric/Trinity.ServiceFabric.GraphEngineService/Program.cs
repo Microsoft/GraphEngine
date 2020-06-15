@@ -6,9 +6,12 @@ using Trinity.DynamicCluster.Storage;
 using Trinity.ServiceFabric;
 using Trinity.ServiceFabric.Remoting;
 using Trinity.ServiceFabric.SampleProtocols;
+using Trinity.ServiceFabric.SampleProtocols.ServiceFabricSampleModule;
 
 namespace Trinity.SampleApplication.ServiceFabric
 {
+    using System.Linq;
+
     // Workaround: extension assembly will be removed by the
     // compiler if it is not explicitly used in the code.
     [UseExtension(typeof(BlobStoragePersistentStorage))]
@@ -17,6 +20,7 @@ namespace Trinity.SampleApplication.ServiceFabric
     [UseExtension(typeof(SampleModuleImpl))]
     internal static class Program
     {
+        private static SampleModuleImpl sampleModule = null;
         /// <summary>
         /// This is the entry point of the service host process.
         /// </summary>
@@ -30,13 +34,29 @@ namespace Trinity.SampleApplication.ServiceFabric
             // When StartService returns, it is guaranteed that Global.CloudStorage
             // is fully operational, and Global.CommunicationInstance is successfully
             // started.
+
             GraphEngineService.StartServiceAsync("Trinity.ServiceFabric.GraphEngineServiceType").GetAwaiter().GetResult();
+
+            // Global.Communications runtime is ready
+
+            var sampleModuleImplementation = Global.CommunicationInstance;
+
+            var graphEngineModules = Global.CommunicationInstance.GetRegisteredCommunicationModuleTypes();
+
+            foreach (var _ in graphEngineModules.Where(module => module.Assembly.FullName == nameof(SampleModuleImpl)).Select(module => new { }))
+            {
+                var p = Global.CommunicationInstance.CloudStorage.MyPartitionId;
+                sampleModule = Global.CommunicationInstance.GetCommunicationModule<SampleModuleImpl>();
+                sampleModule.Ping(p);
+            }
 
             // Also, pay attention that, only *master replicas of the partitions* reach here.
             // When the cluster is shutting down, it is possible that the secondary replicas
             // become the master. However, these "transient" masters will be blocked, and
             // do not reach this point.
+
             Log.WriteLine("Hello world from GE-SF integration!");
+
             var memcloud = Global.CloudStorage as DynamicMemoryCloud;
 
             // Prevents this host process from terminating so services keep running.

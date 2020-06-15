@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <Platforms>x64</Platforms>
     <IsPackable>false</IsPackable>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>

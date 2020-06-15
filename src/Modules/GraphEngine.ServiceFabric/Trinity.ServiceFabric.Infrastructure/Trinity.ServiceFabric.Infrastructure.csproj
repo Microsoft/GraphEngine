@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;netstandard2.0</TargetFrameworks>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Version>$(DOTNET_PACKAGE_VERSION)</Version>
     <FileVersion>$(DOTNET_PACKAGE_VERSION)</FileVersion>
@@ -22,16 +22,20 @@
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+	<!--<Target Name="CopyPackage" AfterTargets="Pack">
+		<Copy SourceFiles="$(OutputPath)..\$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(DOTNET_OUTPUT_PATH)" />
+	</Target>-->
+
   <ItemGroup>
     <PackageReference Include="GraphEngine.Core" Version="$(DOTNET_PACKAGE_VERSION)" />
     <PackageReference Include="GraphEngine.DynamicCluster" Version="$(DOTNET_PACKAGE_VERSION)" />
-    <PackageReference Include="Microsoft.ServiceFabric" version="6.0.232" />
-    <PackageReference Include="Microsoft.ServiceFabric.Data" version="2.8.232" />
-    <PackageReference Include="Microsoft.ServiceFabric.Diagnostics.Internal" version="2.8.232" />
-    <PackageReference Include="Microsoft.ServiceFabric.Services" version="2.8.232" />
-    <PackageReference Include="Nito.AsyncEx.Tasks" version="1.1.0" />
-    <PackageReference Include="Nito.Disposables" version="1.0.0" />
-    <PackageReference Include="System.Collections.Immutable" version="1.4.0" />
+    <PackageReference Include="Microsoft.ServiceFabric" version="7.1.416" />
+    <PackageReference Include="Microsoft.ServiceFabric.Data" version="4.1.416" />
+    <PackageReference Include="Microsoft.ServiceFabric.Diagnostics.Internal" version="4.1.416" />
+    <PackageReference Include="Microsoft.ServiceFabric.Services" version="4.1.416" />
+    <PackageReference Include="Nito.AsyncEx.Tasks" version="5.0.0" />
+    <PackageReference Include="Nito.Disposables" version="2.1.0" />
+    <PackageReference Include="System.Collections.Immutable" version="1.7.1" />
     <PackageReference Include="System.IO.Compression.ZipFile" version="4.3.0" />
     <PackageReference Include="System.Runtime.Numerics" version="4.3.0" />
     <PackageReference Include="System.ValueTuple" version="4.5.0" />

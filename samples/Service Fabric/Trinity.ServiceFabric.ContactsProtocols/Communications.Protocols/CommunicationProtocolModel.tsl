@@ -1,0 +1,59 @@
+﻿// Sample Trinity Graph Engine TSL Script File
+// This file defines the coommunicatioons RPC protocol API set
+
+// TSL Structs are used to define the message that flow between the GE Client and Server comoponents
+// Define a request to Create a new Contact
+// We use Wkipedia to define field names: see: http://
+
+enum OperationResponseCode
+{
+	ContactCreated,
+	ContactNotFound,
+	ContactAlreadyExist
+}
+
+struct CreateContactRequest
+{
+	Guid ContactId;
+	string GivenName;
+	string MiddleName;
+	string SirName;
+}
+
+struct QueryContactByIdRequest
+{
+	Guid ContactId;		
+}
+
+struct QueryContactByNameRequest
+{
+	string GivenName;
+	string NickName;
+	string FamilyName;
+}
+
+struct CreateContactResponse
+{
+   OperationResponseCode ReponseCode;
+}
+
+struct QueryContactByIdResponse
+{
+	Guid ContactId;
+	string GivenName;
+	string MiddleName;
+	string SirName;
+}
+
+// Create Contact API - Asynchronous, non-blocking
+protocol CreateContact
+{
+	Type: Asyn;
+	Request: CreateContactRequest;
+	Response: CreateContactResponse;
+}
+
+module ContactCommunicationsModule
+{
+	protocol CreateContact;
+}
